@@ -1,10 +1,12 @@
-# edit date : 2024-04-26
+# edit date : 2024-08-07
 # version : 1.9.0
 
 from random import randint
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.select import Select
+from selenium.webdriver.chrome.options import Options as ChromeOptions
+from selenium.webdriver.common.alert import Alert
 from modules.selenium import *
 
 import time
@@ -15,17 +17,17 @@ chrome_path = 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe %s'
 ############# 자동 예매 원하는 설정으로 변경 ##############
 
 member_number = "0000000000" # 회원번호
-password= "password" # 비밀번호
-arrival = "동대구" # 출발지
-departure = "수서" # 도착지
-standard_date = "20240506" # 기준날짜 ex) 20221101
-standard_time = "12" # 기준 시간 ex) 00 - 22 // 2의 배수로 입력
+password= "1234" # 비밀번호
+departure = "동탄" # 출발지
+arrival = "대전" # 도착지
+standard_date = "20240813" # 기준날짜 ex) 20221101
+standard_time = "10" # 기준 시간 ex) 00 - 22 // 2의 배수로 입력
 
 """
 현재 페이지에 나타난 기차 몇번째 줄부터 몇번째 줄의 기차까지 조회할지 선택 
 """
 from_train_number = 1 # 몇번째 기차부터 조회할지  min = 1, max = 10
-to_train_number = 10 # 몇번째 기차까지 조회할지 min = from_train_number, max = 10
+to_train_number = 1 # 몇번째 기차까지 조회할지 min = from_train_number, max = 10
 
 #################################################################
 
@@ -37,9 +39,19 @@ print("--------------- Start SRT Macro ---------------")
 # 같은 디렉토리에 있기 때문에 chromedriver.exe파일 이름만 써줌
 print("selenium version : ", get_selenium_version())
 
+# chrome_options = webdriver.ChromeOptions()
+# chrome_options.add_argument("--headless")
+# 
+# linux 환경에서 필요한 option
+# chrome_options.add_argument('--no-sandbox')
+# chrome_options.add_argument('--disable-dev-shm-usage')
+options = ChromeOptions()
+options.add_experimental_option('excludeSwitches',['enable-logging'])
+
 # selenium 버전에 따른 webdriver 분기
 v1, v2, v3 = get_selenium_version().split(".")
-driver = webdriver.Chrome("chromedriver") if int(v1) < 4 else webdriver.Chrome()
+driver = webdriver.Chrome("chromedriver", options=options) if int(v1) < 4 else webdriver.Chrome(options=options)
+# driver = webdriver.Chrome(options=chrome_options)
 
 # 이동을 원하는 페이지 주소 입력
 driver.get('https://etk.srail.co.kr/cmc/01/selectLoginForm.do')
@@ -64,12 +76,12 @@ driver.implicitly_wait(5)
 # 출발지 입력
 dep_stn = driver.find_element(By.ID, 'dptRsStnCdNm')
 dep_stn.clear()
-dep_stn.send_keys(arrival)
+dep_stn.send_keys(departure)
 
 # 도착지 입력
 arr_stn = driver.find_element(By.ID, 'arvRsStnCdNm')
 arr_stn.clear()
-arr_stn.send_keys(departure)
+arr_stn.send_keys(arrival)
 
 # 날짜 드롭다운 리스트 보이게
 # elm_dptDt = driver.find_element(By.ID, "dptDt")
@@ -86,6 +98,9 @@ Select(driver.find_element(By.ID, "dptTm")).select_by_visible_text(standard_time
 # 조회하기 버튼
 driver.find_element(By.XPATH, "//input[@value='조회하기']").click()
 
+# (특정 기간, 노선별 선택사항)  Alert 팝업창 확인 버튼 (Alert Text: [대전 중앙로 일원 교통통제 안내] ~ 2024. 8. 7.(수) 05:00 ~ 8. 18.(일) 05:00 까지 ~)
+da = Alert(driver)
+da.accept()
 
 train_list = driver.find_elements(By.CSS_SELECTOR, "#result-form > fieldset > \
 div.tbl_wrap.th_thead > table > tbody > tr")
@@ -168,12 +183,3 @@ while True:
     else:
         time.sleep(1000)
         break
-
-
-
-
-
-
-
-    
-
