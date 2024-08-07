@@ -182,8 +182,6 @@ while True:
             driver.implicitly_wait(5)
 
             driver.refresh() #새로고침
-            if popup_alert:
-                popup_alert.accept()
             driver.implicitly_wait(5)
             pass
 
