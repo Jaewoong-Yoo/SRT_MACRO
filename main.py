@@ -8,6 +8,7 @@ from selenium.webdriver.support.select import Select
 from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium.webdriver.common.alert import Alert
 from modules.selenium import *
+from pyautogui import typewrite
 
 import time
 import webbrowser
@@ -182,6 +183,8 @@ while True:
             driver.implicitly_wait(5)
 
             driver.refresh() #새로고침
+            # "연결이 비공개로 설정되어 있지 않습니다." => thisisunsafe 타이핑
+            typewrite("thisisunsafe")
             driver.implicitly_wait(5)
             pass
 
