@@ -99,8 +99,9 @@ Select(driver.find_element(By.ID, "dptTm")).select_by_visible_text(standard_time
 driver.find_element(By.XPATH, "//input[@value='조회하기']").click()
 
 # (특정 기간, 노선별 선택사항)  Alert 팝업창 확인 버튼 (Alert Text: [대전 중앙로 일원 교통통제 안내] ~ 2024. 8. 7.(수) 05:00 ~ 8. 18.(일) 05:00 까지 ~)
-da = Alert(driver)
-da.accept()
+popup_alert = Alert(driver)
+if popup_alert:
+    popup_alert.accept()
 
 train_list = driver.find_elements(By.CSS_SELECTOR, "#result-form > fieldset > \
 div.tbl_wrap.th_thead > table > tbody > tr")
@@ -112,6 +113,9 @@ while True:
     try:
         for i in range(from_train_number, to_train_number + 1):
             standard_seat = driver.find_element(By.CSS_SELECTOR, f"#result-form > fieldset > div.tbl_wrap.th_thead > table > tbody > tr:nth-child({i}) > td:nth-child(7)").text
+
+            if popup_alert:
+                popup_alert.accept()
 
             if "예약하기" in standard_seat:
                 print("예약 가능 클릭")
@@ -133,6 +137,9 @@ while True:
             else :
                 try:
                     standby_seat = driver.find_element(By.CSS_SELECTOR, f"#result-form > fieldset > div.tbl_wrap.th_thead > table > tbody > tr:nth-child({i}) > td:nth-child(8)").text
+
+                    if popup_alert:
+                        popup_alert.accept()
 
                     if "신청하기" in standby_seat:
                         print("예약 대기 신청")
@@ -166,6 +173,8 @@ while True:
             submit = driver.find_element(By.XPATH, "/html/body/div/div[4]/div/div[2]/form/fieldset/div[2]/input")
             driver.execute_script("arguments[0].click();", submit)
             print("새로고침")
+            if popup_alert:
+                popup_alert.accept()
 
         except: 
             print("잔여석 없음 #2. 초기화")
@@ -173,6 +182,8 @@ while True:
             driver.implicitly_wait(5)
 
             driver.refresh() #새로고침
+            if popup_alert:
+                popup_alert.accept()
             driver.implicitly_wait(5)
             pass
 
