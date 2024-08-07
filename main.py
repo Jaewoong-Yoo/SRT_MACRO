@@ -178,6 +178,8 @@ while True:
                 popup_alert.accept()
 
         except: 
+            # "연결이 비공개로 설정되어 있지 않습니다." => thisisunsafe 타이핑
+            typewrite("thisisunsafe")
             print("잔여석 없음 #2. 초기화")
             driver.back() #뒤로가기
             driver.implicitly_wait(5)
