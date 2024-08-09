@@ -101,8 +101,10 @@ driver.find_element(By.XPATH, "//input[@value='조회하기']").click()
 
 # (특정 기간, 노선별 선택사항)  Alert 팝업창 확인 버튼 (Alert Text: [대전 중앙로 일원 교통통제 안내] ~ 2024. 8. 7.(수) 05:00 ~ 8. 18.(일) 05:00 까지 ~)
 popup_alert = Alert(driver)
-if popup_alert:
-    popup_alert.accept()
+try:
+    popup_alert.accept() # 팝업 창 있으면, accept
+except:
+    pass # 팝업 창 없으면, just ignore
 
 train_list = driver.find_elements(By.CSS_SELECTOR, "#result-form > fieldset > \
 div.tbl_wrap.th_thead > table > tbody > tr")
@@ -115,8 +117,11 @@ while True:
         for i in range(from_train_number, to_train_number + 1):
             standard_seat = driver.find_element(By.CSS_SELECTOR, f"#result-form > fieldset > div.tbl_wrap.th_thead > table > tbody > tr:nth-child({i}) > td:nth-child(7)").text
 
-            if popup_alert:
-                popup_alert.accept()
+            try:
+                popup_alert.accept() # 팝업 창 있으면, accept
+                print('예약하기 or 예약대기 팝업 OK')
+            except:
+                pass # 팝업 창 없으면, just ignore
 
             if "예약하기" in standard_seat:
                 print("예약 가능 클릭")
@@ -138,9 +143,6 @@ while True:
             else :
                 try:
                     standby_seat = driver.find_element(By.CSS_SELECTOR, f"#result-form > fieldset > div.tbl_wrap.th_thead > table > tbody > tr:nth-child({i}) > td:nth-child(8)").text
-
-                    if popup_alert:
-                        popup_alert.accept()
 
                     if "신청하기" in standby_seat:
                         print("예약 대기 신청")
@@ -174,8 +176,10 @@ while True:
             submit = driver.find_element(By.XPATH, "/html/body/div/div[4]/div/div[2]/form/fieldset/div[2]/input")
             driver.execute_script("arguments[0].click();", submit)
             print("새로고침")
-            if popup_alert:
-                popup_alert.accept()
+            try:
+                popup_alert.accept() # 팝업 창 있으면, accept
+            except:
+                pass # 팝업 창 없으면, just ignore
 
         except: 
             # "연결이 비공개로 설정되어 있지 않습니다." => thisisunsafe 타이핑
