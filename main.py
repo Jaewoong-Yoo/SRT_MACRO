@@ -1,5 +1,5 @@
-# edit date : 2024-08-07
-# version : 1.9.0
+# edit date : 2024-08-10
+# edit by Jaewoong-Yoo
 
 from random import randint
 from selenium import webdriver
@@ -10,17 +10,30 @@ from selenium.webdriver.common.alert import Alert
 from modules.selenium import *
 from pyautogui import typewrite
 
+import os
+import asyncio
+import telegram
 import time
 import webbrowser
+from dotenv import load_dotenv
+
+load_dotenv(verbose=True)
+
+# Telegram 봇 생성 (예약 성공 알림용)
+api_key = os.environ.get('TELEGRAM_API_KEY')
+chat_id = os.environ.get('TELEGRAM_CHAT_ID')
+bot = telegram.Bot(token=api_key)
 
 chrome_path = 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe %s'
 
 ############# 자동 예매 원하는 설정으로 변경 ##############
 
-member_number = "0000000000" # 회원번호
-password= "1234" # 비밀번호
-departure = "동탄" # 출발지
-arrival = "대전" # 도착지
+# member_number = "0000000000" # 회원번호
+# password = "1234" # 비밀번호
+member_number = os.environ.get('SRT_ID')
+password = os.environ.get('SRT_PW')
+departure = "수서" # 출발지
+arrival = "경주" # 도착지
 standard_date = "20240813" # 기준날짜 ex) 20221101
 standard_time = "10" # 기준 시간 ex) 00 - 22 // 2의 배수로 입력
 
@@ -133,6 +146,7 @@ while True:
                     reserved = True
                     print('예약 성공')
                     webbrowser.get(chrome_path).open("https://etk.srail.kr/hpg/hra/02/selectReservationList.do?pageId=TK0102010000")
+                    asyncio.run(bot.sendMessage(chat_id, text='예약 성공!! (결제 필요, 미결제 시 10분 후 자동 예약 취소됨)'))
                     break
 
                 else:
