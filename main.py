@@ -24,6 +24,9 @@ api_key = os.environ.get('TELEGRAM_API_KEY')
 chat_id = os.environ.get('TELEGRAM_CHAT_ID')
 bot = telegram.Bot(token=api_key)
 
+MESSAGE_RESERVE_SUCCESS = '예약 성공!! (결제 필요, 미결제 시 10분 후 자동 예약 취소됨)'
+MESSAGE_RESTART_PROGRAM = '새로고침 후 페이지 로딩이 원활하지 않습니다. (프로그램 재시작 필요, 무한 잔여석 조회 불가)'
+
 chrome_path = 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe %s'
 
 ############# 자동 예매 원하는 설정으로 변경 ##############
@@ -124,6 +127,7 @@ div.tbl_wrap.th_thead > table > tbody > tr")
 
 print(train_list)
 
+restart_detect_cnt = 0
 
 while True: 
     try:
@@ -146,7 +150,7 @@ while True:
                     reserved = True
                     print('예약 성공')
                     webbrowser.get(chrome_path).open("https://etk.srail.kr/hpg/hra/02/selectReservationList.do?pageId=TK0102010000")
-                    asyncio.run(bot.sendMessage(chat_id, text='예약 성공!! (결제 필요, 미결제 시 10분 후 자동 예약 취소됨)'))
+                    asyncio.run(bot.sendMessage(chat_id, text=MESSAGE_RESERVE_SUCCESS))
                     break
 
                 else:
@@ -179,9 +183,14 @@ while True:
                     print("예약 대기 신청 불가")
                     pass
 
+            restart_detect_cnt = 0
+
 
     except: 
         print('잔여석 조회 불가')
+        restart_detect_cnt += 1
+        if 30 < restart_detect_cnt < 36:
+            asyncio.run(bot.sendMessage(chat_id, text=MESSAGE_RESTART_PROGRAM))
         pass
     
     if not reserved:
