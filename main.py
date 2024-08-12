@@ -1,4 +1,4 @@
-# edit date : 2024-08-10
+# edit date : 2024-08-12
 # edit by Jaewoong-Yoo
 
 from random import randint
@@ -17,6 +17,7 @@ import time
 import webbrowser
 from dotenv import load_dotenv
 
+asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 load_dotenv(verbose=True)
 
 # Telegram 봇 생성 (예약 성공 알림용)
@@ -24,7 +25,11 @@ api_key = os.environ.get('TELEGRAM_API_KEY')
 chat_id = os.environ.get('TELEGRAM_CHAT_ID')
 bot = telegram.Bot(token=api_key)
 
+async def send_message(bot, message):
+    await bot.sendMessage(chat_id, message)
+
 MESSAGE_RESERVE_SUCCESS = '예약 성공!! (결제 필요, 미결제 시 10분 후 자동 예약 취소됨)'
+MESSAGE_RESERVE_WAITING = '예약 대기 성공!!'
 MESSAGE_RESTART_PROGRAM = '새로고침 후 페이지 로딩이 원활하지 않습니다. (프로그램 재시작 필요, 무한 잔여석 조회 불가)'
 
 chrome_path = 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe %s'
@@ -35,16 +40,18 @@ chrome_path = 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe %s'
 # password = "1234" # 비밀번호
 member_number = os.environ.get('SRT_ID')
 password = os.environ.get('SRT_PW')
-departure = "수서" # 출발지
-arrival = "경주" # 도착지
-standard_date = "20240813" # 기준날짜 ex) 20221101
+departure = "경주" # 출발지
+arrival = "수서" # 도착지
+standard_date = "20240814" # 기준날짜 ex) 20221101
 standard_time = "10" # 기준 시간 ex) 00 - 22 // 2의 배수로 입력
 
 """
 현재 페이지에 나타난 기차 몇번째 줄부터 몇번째 줄의 기차까지 조회할지 선택 
 """
 from_train_number = 1 # 몇번째 기차부터 조회할지  min = 1, max = 10
-to_train_number = 1 # 몇번째 기차까지 조회할지 min = from_train_number, max = 10
+to_train_number = 2 # 몇번째 기차까지 조회할지 min = from_train_number, max = 10
+
+ticket_info = f' : {departure}-{arrival}/{standard_date}/{standard_time}시기준/{from_train_number}-{to_train_number}번째 기차 중'
 
 #################################################################
 
@@ -149,8 +156,8 @@ while True:
                 if driver.find_elements(By.ID, 'isFalseGotoMain'):
                     reserved = True
                     print('예약 성공')
+                    asyncio.run(send_message(bot, MESSAGE_RESERVE_SUCCESS+ticket_info))
                     webbrowser.get(chrome_path).open("https://etk.srail.kr/hpg/hra/02/selectReservationList.do?pageId=TK0102010000")
-                    asyncio.run(bot.sendMessage(chat_id, text=MESSAGE_RESERVE_SUCCESS))
                     break
 
                 else:
@@ -171,6 +178,7 @@ while True:
                         if driver.find_elements(By.ID, 'isFalseGotoMain'):
                             reserved = True
                             print('예약 성공')
+                            asyncio.run(send_message(bot, MESSAGE_RESERVE_WAITING+ticket_info))
                             webbrowser.get(chrome_path).open("https://etk.srail.kr/hpg/hra/02/selectReservationList.do?pageId=TK0102010000")
                             break
 
@@ -189,8 +197,8 @@ while True:
     except: 
         print('잔여석 조회 불가')
         restart_detect_cnt += 1
-        if 30 < restart_detect_cnt < 36:
-            asyncio.run(bot.sendMessage(chat_id, text=MESSAGE_RESTART_PROGRAM))
+        if 10 < restart_detect_cnt < 16:
+            asyncio.run(send_message(bot, MESSAGE_RESTART_PROGRAM+ticket_info))
         pass
     
     if not reserved:
